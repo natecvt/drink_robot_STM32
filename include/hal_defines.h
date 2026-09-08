@@ -5,17 +5,27 @@
 #include "main.h"
 #include <stdint.h>
 
+/** --- DEFINES --- */
 /** Buttons */
 
-#define BUTTON_ARR_S 5
-#define BUTTON_LEFT 0
-#define BUTTON_UP 1
-#define BUTTON_RIGHT 2
-#define BUTTON_DOWN 3
-#define BUTTON_SEL 4
-
 #define DEBOUNCE_MS 50
+#define TIMER_ARR_INCR_S 0.0001 // tenth of millisecond
+#define TIMER_DIFF (uint16_t)((double)DEBOUNCE_MS / (1000.0 * TIMER_ARR_INCR_S))
 #define BUTTON_TIMER TIM3
+
+/** --- DATA --- */
+/** Buttons */
+
+typedef enum {
+    BUTTON_LOW = GPIO_PIN_RESET,
+    BUTTON_HIGH = GPIO_PIN_SET,
+} Button_State;
+
+typedef enum {
+    BUTTON_HAL_OK = 0,
+    BUTTON_HAL_TIM_NOT_ELAPSED = 1,
+    BUTTON_UNKNOWN = 2,
+} Button_HAL_Err;
 
 /** #TODO: resolve HAL/native button interdependency */
 typedef struct {
@@ -30,8 +40,9 @@ typedef struct {
 
 extern Button_HAL_t buttons_HAL[];
 
-uint8_t button_HAL_init(Button_HAL_t button, GPIO_TypeDef* gpio_bus, uint16_t gpio);
-uint8_t buttons_HAL_isr(uint16_t gpio);
-void buttons_HAL_overflow_handler();
+void button_timer_init();
+void button_HAL_init(Button_HAL_t *button, GPIO_TypeDef* gpio_bus, uint16_t gpio);
+uint8_t buttons_HAL_isr(Button_State *bs, uint8_t button_index);
+void buttons_HAL_overflow_handler(uint8_t button_arr_size);
 
 #endif /** HAL_DEFINES_H */
