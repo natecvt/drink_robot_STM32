@@ -13,10 +13,10 @@ void button_HAL_timer_init()
 
 }
 
-void button_HAL_init(Button_HAL_t *button, GPIO_TypeDef *gpio_bus, uint16_t gpio)
+void button_HAL_init(Button_HAL_t *button, uint16_t gpio)
 {
 
-    button->gpio_bus = gpio_bus;
+    button->gpio_bus = BUTTON_GPIO_BUS;
     button->gpio = gpio;
 
     button->overflow = 0;

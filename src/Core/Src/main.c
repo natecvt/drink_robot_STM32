@@ -18,12 +18,11 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "stdio.h"
-#include "button.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "button.h"
+#include "stdio.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -108,25 +107,30 @@ int main(void)
   MX_USART2_UART_Init();
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
-  HAL_TIM_Base_Start(&htim3);
+  HAL_TIM_Base_Start_IT(&htim3);
 
-  button_init(BUTTON_SEL);
-  button_init(BUTTON_RIGHT);
-  button_init(BUTTON_DOWN);
-  button_init(BUTTON_UP);
-  button_init(BUTTON_LEFT);
+  button_HAL_timer_init();
+
+  /** #TODO: formalize the adding of pins and busses */
+  button_init(BUTTON_SEL, PIN_BUTTON_SEL_Pin);
+  button_init(BUTTON_RIGHT, PIN_BUTTON_RIGHT_Pin);
+  button_init(BUTTON_DOWN, PIN_BUTTON_DOWN_Pin);
+  button_init(BUTTON_UP, PIN_BUTTON_UP_Pin);
+  button_init(BUTTON_LEFT, PIN_BUTTON_LEFT_Pin);
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  
+
   while (1)
   {
-    /* USER CODE END WHILE */
-    HAL_Delay(100);
     static Button_State_t bs;
     button_get_state(&bs, BUTTON_SEL);
-    printf("Button SELECT state: %d\n", bs);
+    HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, bs);
+    /* USER CODE END WHILE */
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -285,13 +289,23 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PB1 PB2 PB13 PB14
-                           PB15 */
-  GPIO_InitStruct.Pin = GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_13|GPIO_PIN_14
-                          |GPIO_PIN_15;
+  /*Configure GPIO pins : PIN_BUTTON_RIGHT_Pin PIN_BUTTON_SEL_Pin PIN_BUTTON_LEFT_Pin PIN_BUTTON_UP_Pin
+                           PIN_BUTTON_DOWN_Pin */
+  GPIO_InitStruct.Pin = PIN_BUTTON_RIGHT_Pin|PIN_BUTTON_SEL_Pin|PIN_BUTTON_LEFT_Pin|PIN_BUTTON_UP_Pin
+                          |PIN_BUTTON_DOWN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI1_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI1_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI2_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI2_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 

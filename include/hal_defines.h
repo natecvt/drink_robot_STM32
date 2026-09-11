@@ -12,6 +12,7 @@
 #define TIMER_ARR_INCR_S 0.0001 // tenth of millisecond
 #define TIMER_DIFF (uint16_t)((double)DEBOUNCE_MS / (1000.0 * TIMER_ARR_INCR_S))
 #define BUTTON_TIMER TIM3
+#define BUTTON_GPIO_BUS GPIOB
 
 /** --- DATA --- */
 /** Buttons */
@@ -50,7 +51,7 @@ typedef struct {
 extern Button_HAL_t buttons_HAL[];
 
 void button_HAL_timer_init();
-void button_HAL_init(Button_HAL_t *button, GPIO_TypeDef* gpio_bus, uint16_t gpio);
+void button_HAL_init(Button_HAL_t *button, uint16_t gpio);
 uint8_t button_HAL_index_from_gpio(uint16_t gpio);
 Button_HAL_Err_t buttons_HAL_isr(Button_State_t *bs, uint8_t button_index);
 void buttons_HAL_overflow_handler();

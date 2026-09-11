@@ -15,7 +15,7 @@ typedef enum {
 
 extern Button_t buttons[];
 
-Button_Err_t button_init(uint8_t button_init);
+Button_Err_t button_init(uint8_t button_index, uint16_t gpio);
 Button_Err_t button_get_state(Button_State_t *bs, uint8_t button_index);
 
 #endif /** BUTTON_H */
