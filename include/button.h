@@ -1,7 +1,7 @@
 #ifndef BUTTON_H
 #define BUTTON_H
 
-#include "HAL_defines.h"
+#include "hal_defines.h"
 
 typedef struct {
     Button_HAL_t *button_HAL;

@@ -1,4 +1,4 @@
-#include "HAL_defines.h"
+#include "hal_defines.h"
 
 Button_HAL_t buttons_HAL[BUTTON_LEN] = {};
 
