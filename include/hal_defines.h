@@ -63,7 +63,7 @@ typedef enum {
 
 typedef enum {
     BUTTON_HAL_OK = 0,
-    BUTTON_HAL_TIM_NOT_ELAPSED = 1,
+    BUTTON_HAL_PROTECTED = 1,
     BUTTON_HAL_UNKNOWN = 2,
 } Button_HAL_Err_t;
 
@@ -73,9 +73,8 @@ typedef struct {
     GPIO_TypeDef* gpio_bus;
     uint16_t gpio;
 
-    /** timer items */
-    uint8_t overflow;
-    uint16_t timestamp;
+    uint8_t protected;
+    Button_State_t state;
 } Button_HAL_t;
 
 extern Button_HAL_t buttons_HAL[];
@@ -83,8 +82,8 @@ extern Button_HAL_t buttons_HAL[];
 void button_HAL_timer_init();
 void button_HAL_init(Button_HAL_t *button, uint16_t gpio);
 uint8_t button_HAL_index_from_gpio(uint16_t gpio);
-Button_HAL_Err_t buttons_HAL_isr(Button_State_t *bs, uint8_t button_index);
-void buttons_HAL_overflow_handler();
+Button_HAL_Err_t buttons_HAL_isr(uint8_t button_index);
+void buttons_HAL_reset();
 
 /** SH1106 LCD Screen */
 

@@ -65,7 +65,7 @@ static void MX_I2C1_Init(void);
 /* USER CODE BEGIN 0 */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  if (htim == &htim3) buttons_HAL_overflow_handler();
+  if (htim == &htim3) buttons_HAL_reset();
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
@@ -74,7 +74,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
   index = button_HAL_index_from_gpio(GPIO_Pin);
 
   /** #TODO: current way state is handled is ugly, change it */
-  if (buttons_HAL_isr(&(buttons[index].state), index)) printf("Button Error\n");
+  buttons_HAL_isr(index);
+
 }
 /* USER CODE END 0 */
 
