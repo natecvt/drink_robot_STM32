@@ -32,9 +32,6 @@
 #define SH1106_NORMALDISPLAY 0xA6
 #define SH1106_INVERTDISPLAY 0xA7
 
-extern I2C_HandleTypeDef hi2c1;
-#define SH1106_I2C &hi2c1
-
 #define SH1106_I2C_TIMEOUT  20000
 
 /* Write command */

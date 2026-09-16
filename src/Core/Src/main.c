@@ -115,6 +115,7 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim3);
 
   button_HAL_timer_init();
+  volatile uint8_t stat = SH1106_Init();
 
   /** #TODO: formalize the adding of pins and busses */
   button_init(BUTTON_SEL, PIN_BUTTON_SEL_Pin);
@@ -129,25 +130,16 @@ int main(void)
   /* USER CODE BEGIN WHILE */
 
   uint8_t bits = 0;
+  volatile char err = 0;
   
   while (1)
   {
-    static Button_State_t bs;
-    button_get_state(&bs, BUTTON_SEL);
-    bits |= (bs);
-    HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, bs);
 
-    button_get_state(&bs, BUTTON_DOWN);
-    bits |= (bs << 2);
-    button_get_state(&bs, BUTTON_UP);
-    bits |= (bs << 3);
-    button_get_state(&bs, BUTTON_RIGHT);
-    bits |= (bs << 1);
-    button_get_state(&bs, BUTTON_LEFT);
-    bits |= (bs << 4);
-
-    printf("Buttons: %d\n", bits);
-    bits = 0;
+    SH1106_Clear();
+    SH1106_GotoXY(0, 32);
+    err = SH1106_Puts("Hello", &Font_7x10, SH1106_COLOR_WHITE);
+    SH1106_DrawCircle(64, 32, 10, SH1106_COLOR_WHITE);
+    SH1106_UpdateScreen();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
