@@ -10,6 +10,7 @@
     BUTTON_LOW = 0,
     BUTTON_HIGH = 1,
     } Button_State_t;
+
 #else
     #include "hal_defines.h"
 #endif

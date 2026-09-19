@@ -12,11 +12,15 @@
 /** --- DEFINES --- */
 /** Buttons */
 
-#define DEBOUNCE_MS 50
+#define DEBOUNCE_MS 500
 #define TIMER_ARR_INCR_S 0.0001 // tenth of millisecond
 #define TIMER_DIFF (uint16_t)((double)DEBOUNCE_MS / (1000.0 * TIMER_ARR_INCR_S))
 #define BUTTON_TIMER TIM3
 #define BUTTON_GPIO_BUS GPIOB
+
+/** how many debounce periods for latch to be reset */
+#define SELECT_LATCH_MULT 10
+#define SCROLL_LATCH_MULT 2
 
 /** SH1106 LCD Screen */
 
@@ -53,6 +57,15 @@ enum Buttons {
     BUTTON_LEN = 5
 };
 
+enum Signals {
+    SELECT = 0b00000001,
+    RIGHT =  0b00000010,
+    DOWN =   0b00000100,
+    UP =     0b00001000,
+    LEFT =   0b00010000,
+    BACK =   0b00001001, /** experimental */
+};
+
 typedef enum {
     BUTTON_LOW = GPIO_PIN_RESET,
     BUTTON_HIGH = GPIO_PIN_SET,
@@ -71,10 +84,12 @@ typedef struct {
     uint16_t gpio;
 
     uint8_t protected;
+    uint8_t signal_latched;
     Button_State_t state;
 } Button_HAL_t;
 
 extern Button_HAL_t buttons_HAL[];
+extern volatile uint8_t signal_flags;
 
 void button_HAL_timer_init();
 void button_HAL_init(Button_HAL_t *button, uint16_t gpio);

@@ -22,6 +22,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "button.h"
+#include "menu.h"
 #include "stdio.h"
 /* USER CODE END Includes */
 
@@ -114,32 +115,26 @@ int main(void)
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim3);
 
-  button_HAL_timer_init();
-  volatile uint8_t stat = SH1106_Init();
-
-  /** #TODO: formalize the adding of pins and busses */
-  button_init(BUTTON_SEL, PIN_BUTTON_SEL_Pin);
-  button_init(BUTTON_RIGHT, PIN_BUTTON_RIGHT_Pin);
-  button_init(BUTTON_DOWN, PIN_BUTTON_DOWN_Pin);
-  button_init(BUTTON_UP, PIN_BUTTON_UP_Pin);
-  button_init(BUTTON_LEFT, PIN_BUTTON_LEFT_Pin);
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  button_HAL_timer_init();
+  button_init(BUTTON_SEL, PIN_BUTTON_SEL_Pin);
+  button_init(BUTTON_LEFT, PIN_BUTTON_LEFT_Pin);
 
-  uint8_t bits = 0;
-  volatile char err = 0;
-  
   while (1)
   {
+    Button_State_t bs;
+    button_get_state(&bs, BUTTON_SEL);
+    printf("%d -- %d -- %d\n", bs, buttons_HAL[0].signal_latched, signal_flags);
 
-    SH1106_Clear();
-    SH1106_GotoXY(0, 32);
-    err = SH1106_Puts("Hello", &Font_7x10, SH1106_COLOR_WHITE);
-    SH1106_DrawCircle(64, 32, 10, SH1106_COLOR_WHITE);
-    SH1106_UpdateScreen();
+    button_get_state(&bs, BUTTON_LEFT);
+    if (bs && !buttons_HAL[0].signal_latched) {
+      signal_flags = 0;
+    }
+
+    HAL_Delay(10);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
