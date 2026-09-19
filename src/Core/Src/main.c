@@ -122,17 +122,17 @@ int main(void)
   button_HAL_timer_init();
   button_init(BUTTON_SEL, PIN_BUTTON_SEL_Pin);
   button_init(BUTTON_LEFT, PIN_BUTTON_LEFT_Pin);
+  button_init(BUTTON_RIGHT, PIN_BUTTON_RIGHT_Pin);
+  button_init(BUTTON_DOWN, PIN_BUTTON_DOWN_Pin);
+  button_init(BUTTON_UP, PIN_BUTTON_UP_Pin);
 
   while (1)
   {
     Button_State_t bs;
-    button_get_state(&bs, BUTTON_SEL);
-    printf("%d -- %d -- %d\n", bs, buttons_HAL[0].signal_latched, signal_flags);
-
     button_get_state(&bs, BUTTON_LEFT);
-    if (bs && !buttons_HAL[0].signal_latched) {
-      signal_flags = 0;
-    }
+    printf("%d -- %d -- %d\n", bs, buttons_HAL[BUTTON_LEFT].signal_latched, signal_flags);
+
+    signal_flags = 0;
 
     HAL_Delay(10);
     /* USER CODE END WHILE */

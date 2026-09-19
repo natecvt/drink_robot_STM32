@@ -10,9 +10,13 @@
 #include <string.h>
 
 /** --- DEFINES --- */
+
+#define BIT_SET(b, p) (b |= (1 << p))
+#define BIT_RESET(b, p) (b &= ~(1 << p))
+
 /** Buttons */
 
-#define DEBOUNCE_MS 500
+#define DEBOUNCE_MS 50
 #define TIMER_ARR_INCR_S 0.0001 // tenth of millisecond
 #define TIMER_DIFF (uint16_t)((double)DEBOUNCE_MS / (1000.0 * TIMER_ARR_INCR_S))
 #define BUTTON_TIMER TIM3
@@ -21,6 +25,7 @@
 /** how many debounce periods for latch to be reset */
 #define SELECT_LATCH_MULT 10
 #define SCROLL_LATCH_MULT 2
+#define LR_LATCH_MULT 0
 
 /** SH1106 LCD Screen */
 
