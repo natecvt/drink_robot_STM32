@@ -22,7 +22,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "button.h"
-#include "menu.h"
+#include "menu_defines.h"
 #include "stdio.h"
 /* USER CODE END Includes */
 
@@ -126,15 +126,19 @@ int main(void)
   button_init(BUTTON_DOWN, PIN_BUTTON_DOWN_Pin);
   button_init(BUTTON_UP, PIN_BUTTON_UP_Pin);
 
+  SH1106_Init();
+
+  menu_init_entry(&main_menu);
+  
+
   while (1)
   {
-    Button_State_t bs;
-    button_get_state(&bs, BUTTON_LEFT);
-    printf("%d -- %d -- %d\n", bs, buttons_HAL[BUTTON_LEFT].signal_latched, signal_flags);
+    menu_print();
 
-    signal_flags = 0;
+    HAL_Delay(100);
 
-    HAL_Delay(10);
+    menu_signal();
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

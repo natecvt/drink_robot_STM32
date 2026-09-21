@@ -13,6 +13,10 @@
 
 #define BIT_SET(b, p) (b |= (1 << p))
 #define BIT_RESET(b, p) (b &= ~(1 << p))
+/** Absolute value */
+#define ABS(x)   ((x) > 0 ? (x) : -(x))
+/** Minimum */
+#define min(a, b) (((a) < (b)) ? (a) : (b))
 
 /** Buttons */
 
@@ -47,8 +51,6 @@
 #define SH1106_WRITECOMMAND(command)      SH1106_I2C_Write(SH1106_I2C_ADDR, 0x00, (command))
 /* Write data */
 #define SH1106_WRITEDATA(data)            SH1106_I2C_Write(SH1106_I2C_ADDR, 0x40, (data))
-/* Absolute value */
-#define ABS(x)   ((x) > 0 ? (x) : -(x))
 
 /** --- DATA --- */
 /** Buttons */
