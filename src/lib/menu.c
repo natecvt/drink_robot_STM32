@@ -3,7 +3,7 @@
 Menu * cur_menu = {0};
 
 /** internal variables */
-static uint8_t menu_index = 0, /** index within the menu, for accessing menu data */
+static uint8_t menu_index = 0, /** index into menu-relevant data */
     menu_pos = 0; /** position from the top, init-ed to zero */
     
 void menu_init(uint8_t going_back)
@@ -34,7 +34,7 @@ void __menu_SH1106_highlight_item()
 
 char __list_type_menu_SH1106_print()
 {
-    uint8_t bottom = min(cur_menu->count - (menu_index - menu_pos), ROWS),
+    uint8_t bottom = min(cur_menu->count, ROWS),
         ret = 0;
 
     SH1106_Clear();
@@ -61,11 +61,24 @@ Menu_Err_t menu_print()
     return __list_type_menu_SH1106_print();
 }
 
-Menu_Err_t menu_update_list(MenuItem *items)
+Menu_Err_t menu_update_list(uint8_t up)
 {
-    if (menu_index > cur_menu->count) return MENU_LIST_BOUNDS_ERR;
+    if (cur_menu->count <= ROWS) return MENU_NO_ACTION;
+    /** 
+     * WARNING: this does not check the bounds of the underlying list
+     * count should've been initialized correctly to avoid errors
+     */
 
-    cur_menu->items = &(items[menu_index]);
+    if (up) menu_index--;
+    else menu_index++;
+
+    if (cur_menu->item_regime == MENU_ITEMS_PREALLOC) {
+        if (up) cur_menu->items--;
+        else cur_menu->items++;
+    }
+    else {
+        BIT_SET_MASK(signal_flags, DATA_FETCH);
+    }
 
     return MENU_OK;
 }
@@ -73,21 +86,22 @@ Menu_Err_t menu_update_list(MenuItem *items)
 Menu_Err_t menu_scroll()
 {
     if (signal_flags & UP) {
-        signal_flags &= (~UP);
-        if (menu_index == 0) return MENU_LIST_BOUNDS_ERR;
+        BIT_RESET_MASK(signal_flags, UP);
+        if (menu_index + menu_pos == 0) return MENU_LIST_BOUNDS_ERR;
 
-        menu_index--;
+        
         if (menu_pos > 0) menu_pos--;
+        else return menu_update_list(1); /** if menu_pos is at top, but menu_index isn't */
 
         return MENU_OK;
     }
 
     if (signal_flags & DOWN) {
-        signal_flags &= (~DOWN);
-        if (menu_index == cur_menu->count - 1) return MENU_LIST_BOUNDS_ERR;
-
-        menu_index++;
-        if (menu_pos < cur_menu->count - 1) menu_pos++;
+        BIT_RESET_MASK(signal_flags, DOWN);
+        if (menu_index + menu_pos == cur_menu->count - 1) return MENU_LIST_BOUNDS_ERR;
+        
+        if (menu_pos < ROWS - 1) menu_pos++;
+        else return menu_update_list(0);
 
         return MENU_OK;
     }
@@ -98,7 +112,7 @@ Menu_Err_t menu_scroll()
 Menu_Err_t menu_select()
 {
     if ((signal_flags & BACK) == BACK) {
-        signal_flags &= (~BACK);
+        BIT_RESET_MASK(signal_flags, BACK);
         if (cur_menu->supmenu == NULL) return MENU_NULL_ERR;
 
         menu_init(1);
@@ -107,7 +121,7 @@ Menu_Err_t menu_select()
     }
 
     if (signal_flags & SELECT) {
-        signal_flags &= (~SELECT);
+        BIT_RESET_MASK(signal_flags, SELECT);
         if (cur_menu->items[menu_index].submenu == NULL) return MENU_NULL_ERR;
 
         menu_init(0);

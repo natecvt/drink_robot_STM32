@@ -8,6 +8,7 @@
 #endif
 #include "fonts_local.h"
 
+#include <memory.h>
 #include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -18,8 +19,6 @@
 #define FONT       &Font_7x10
 #define COLOR      SH1106_COLOR_WHITE
 
-typedef struct Menu Menu;
-
 typedef enum {
     MENU_OK = 0,
     MENU_NO_ACTION = 1,
@@ -28,7 +27,13 @@ typedef enum {
 
 } Menu_Err_t;
 
+enum Menu_Items_Alloc_Method {
+    MENU_ITEMS_PREALLOC = 0,
+    MENU_ITEMS_PROCEDUR = 1
+};
+
 /** Menus and all related items will be declared in a seperate file */
+typedef struct Menu Menu;
 
 typedef struct MenuItem {
     char text[18]; /** the name of the item */
@@ -37,20 +42,24 @@ typedef struct MenuItem {
     
 } MenuItem;
 
-/** Menu Items map 
- * {------------displayed items-------------}
- * |   IT0   |   IT1   |   ...   | ITROWS-1 |
- * items is ROWS elements long, referenced by pointer to ensure struct size
+/** Menu Items map for longer list than can be displayed
+ * {----------------------underlying data----------------------}
+ * |  data0  |   ...   |   ...   |   ...   |   ...   |   ...   |
+ * |----menu_index---->{------------displayed items------------}
+ *                     |   IT0   |   IT1   |   ...   | ITROWS-1|
+ * items is ROWS elements long, referenced by pointer
 */
 
 struct Menu {
     char title[18]; /** top row title, should be underlined for clarity */
     MenuItem *items; /** an array of current menu items */
+    uint8_t item_regime; /** item alloc regime, see Menu_Items_Alloc_Method enum */
     Menu *supmenu; /** the menu above this one */
     uint8_t count; /** count of the number of elements in this menu */
 };
 
 extern Menu * cur_menu;
+extern MenuItem menu_manip[ROWS]; /** external array used to init procedural menus */
 
 /** not creating the menu, merely priming the relevant objects */
 void menu_init(uint8_t going_back);
@@ -58,7 +67,11 @@ void menu_init(uint8_t going_back);
 void menu_init_entry(Menu *main);
 
 Menu_Err_t menu_print();
-Menu_Err_t menu_update_list(MenuItem *items);
+
+/**
+ * @brief updates current list contents
+ */
+Menu_Err_t menu_update_list(uint8_t up);
 
 Menu_Err_t menu_scroll();
 Menu_Err_t menu_select();

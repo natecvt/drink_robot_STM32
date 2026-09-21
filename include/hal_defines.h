@@ -12,7 +12,9 @@
 /** --- DEFINES --- */
 
 #define BIT_SET(b, p) (b |= (1 << p))
+#define BIT_SET_MASK(b, m) (b |= m)
 #define BIT_RESET(b, p) (b &= ~(1 << p))
+#define BIT_RESET_MASK(b, m) (b &= ~(m))
 /** Absolute value */
 #define ABS(x)   ((x) > 0 ? (x) : -(x))
 /** Minimum */
@@ -53,6 +55,19 @@
 #define SH1106_WRITEDATA(data)            SH1106_I2C_Write(SH1106_I2C_ADDR, 0x40, (data))
 
 /** --- DATA --- */
+
+enum Signals {
+    SELECT =     0b00000001,
+    RIGHT =      0b00000010,
+    DOWN =       0b00000100,
+    UP =         0b00001000,
+    LEFT =       0b00010000,
+    BACK =       0b00001001, /** experimental */
+    DATA_FETCH = 0b00100000,
+};
+
+extern volatile uint8_t signal_flags;
+
 /** Buttons */
 
 enum Buttons {
@@ -62,15 +77,6 @@ enum Buttons {
     BUTTON_UP = 3,
     BUTTON_LEFT = 4,
     BUTTON_LEN = 5
-};
-
-enum Signals {
-    SELECT = 0b00000001,
-    RIGHT =  0b00000010,
-    DOWN =   0b00000100,
-    UP =     0b00001000,
-    LEFT =   0b00010000,
-    BACK =   0b00001001, /** experimental */
 };
 
 typedef enum {
@@ -96,7 +102,6 @@ typedef struct {
 } Button_HAL_t;
 
 extern Button_HAL_t buttons_HAL[];
-extern volatile uint8_t signal_flags;
 
 void button_HAL_timer_init();
 void button_HAL_init(Button_HAL_t *button, uint16_t gpio);

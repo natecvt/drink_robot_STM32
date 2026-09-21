@@ -129,15 +129,14 @@ int main(void)
   SH1106_Init();
 
   menu_init_entry(&main_menu);
-  
+  menu_print();
 
   while (1)
   {
-    menu_print();
-
-    HAL_Delay(100);
-
     menu_signal();
+
+    HAL_Delay(1000);
+    menu_print();
 
     /* USER CODE END WHILE */
 

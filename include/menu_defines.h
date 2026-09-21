@@ -3,7 +3,7 @@
 
 #include "menu.h"
 
-#define MAIN_N 5
+#define MAIN_N 6
 
 extern Menu main_menu;
 
