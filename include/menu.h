@@ -58,8 +58,7 @@ struct Menu {
     uint8_t count; /** count of the number of elements in this menu */
 };
 
-extern Menu * cur_menu;
-extern MenuItem menu_manip[ROWS]; /** external array used to init procedural menus */
+extern Menu *cur_menu;
 
 /** not creating the menu, merely priming the relevant objects */
 void menu_init(uint8_t going_back);

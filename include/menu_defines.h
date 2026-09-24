@@ -8,4 +8,6 @@
 extern Menu main_menu;
 Menu select_drink;
 
+void init_drinks();
+
 #endif /** MENU_DEFINES_H */

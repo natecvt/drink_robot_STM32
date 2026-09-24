@@ -91,7 +91,6 @@ Menu_Err_t menu_scroll()
         BIT_RESET_MASK(signal_flags, UP);
         if (menu_index + menu_pos == 0) return MENU_LIST_BOUNDS_ERR;
 
-        
         if (menu_pos > 0) menu_pos--;
         else return menu_update_list(1); /** if menu_pos is at top, but menu_index isn't */
 
@@ -103,7 +102,7 @@ Menu_Err_t menu_scroll()
         if (menu_index + menu_pos == cur_menu->count - 1) return MENU_LIST_BOUNDS_ERR;
         
         if (menu_pos < ROWS - 1) menu_pos++;
-        else return menu_update_list(0);
+        else return menu_update_list(0); /** if menu_pos is bottom, but menu_index isn't */
 
         return MENU_OK;
     }
