@@ -57,7 +57,9 @@ char __list_type_menu_SH1106_print()
 
 Menu_Err_t menu_print()
 {
-    /** TODO: expand on this */
+    /** TODO: expand on this
+     *  should only update menu when menu is changed
+     */
     return __list_type_menu_SH1106_print();
 }
 
@@ -121,9 +123,13 @@ Menu_Err_t menu_select()
     }
 
     if (signal_flags & SELECT) {
-        BIT_RESET_MASK(signal_flags, SELECT);
-        if (cur_menu->items[menu_index].submenu == NULL) return MENU_NULL_ERR;
 
+        uint8_t i = menu_index + menu_pos;
+
+        BIT_RESET_MASK(signal_flags, SELECT);
+        if (cur_menu->items[i].submenu == NULL) return MENU_NULL_ERR;
+
+        if (cur_menu->items[i].action != NULL) cur_menu->items[i].action();
         menu_init(0);
 
         return MENU_OK;
@@ -140,7 +146,9 @@ Menu_Err_t menu_signal()
     ret |= menu_select();
 
     /** only try scrolling when selection is not attempted */
-    if (ret == MENU_NO_ACTION) ret |= menu_scroll();
+    if (ret == MENU_NO_ACTION) ret = menu_scroll();
+
+    if (ret != MENU_NO_ACTION) menu_print();
 
     return ret;
 }

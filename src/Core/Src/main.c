@@ -135,8 +135,7 @@ int main(void)
   {
     menu_signal();
 
-    HAL_Delay(1000);
-    menu_print();
+    HAL_Delay(100);
 
     /* USER CODE END WHILE */
 
