@@ -2,6 +2,7 @@
 #define HAL_DEFINES_H
 
 #include "stm32f4xx_hal.h"
+#include "cmsis_gcc.h" /** for __REV and __REV16 if needed */
 #include "main.h"
 
 #include "fonts_local.h"
@@ -53,6 +54,29 @@
 #define SH1106_WRITECOMMAND(command)      SH1106_I2C_Write(SH1106_I2C_ADDR, 0x00, (command))
 /* Write data */
 #define SH1106_WRITEDATA(data)            SH1106_I2C_Write(SH1106_I2C_ADDR, 0x40, (data))
+
+/* AT24CX EEPROM */
+#define AT24C512
+
+#define EEPROM_ADDRESS 0x50 << 1
+
+#define PAGE_LIMIT 128
+#define PAGE_EXP 7
+
+#if defined(AT24C1024)
+    #define PAGES 1024
+#elif defined(AT24C512)
+    #define PAGES 512
+#elif defined(AT24C256)
+    #define PAGES 256
+#elif defined(AT24C128)
+    #define PAGES 128
+#elif defined(AT24C64)
+    #define PAGES 64
+#elif defined(AT24C32)
+    #define PAGES 32
+#endif
+
 
 /** --- DATA --- */
 
@@ -313,5 +337,21 @@ void SH1106_InvertDisplay (int i);
 
 // clear the display
 void SH1106_Clear (void);
+
+/** AT24CX EEPROM */
+
+typedef enum {
+    EEPROM_OK = 0,
+    EEPROM_ADDRESS_ERR = 1,
+    EEPROM_WRITE_ERR = 2,
+    EEPROM_READ_ERR = 3,
+    EEPROM_OTHER_ERR = 4
+} EEPROM_Status_t;
+
+EEPROM_Status_t eeprom_init();
+/** for some reason the EEPROM doesn't expose the address, don't use the following function */
+EEPROM_Status_t eeprom_current_address_read(uint8_t *byte_address);
+EEPROM_Status_t eeprom_random_read(uint16_t byte_address, uint8_t *data, uint16_t size);
+EEPROM_Status_t eeprom_page_write(uint16_t byte_address, uint8_t *data, uint16_t size);
 
 #endif /** HAL_DEFINES_H */

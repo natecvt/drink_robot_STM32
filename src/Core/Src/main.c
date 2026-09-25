@@ -119,24 +119,22 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  button_HAL_timer_init();
-  button_init(BUTTON_SEL, PIN_BUTTON_SEL_Pin);
-  button_init(BUTTON_LEFT, PIN_BUTTON_LEFT_Pin);
-  button_init(BUTTON_RIGHT, PIN_BUTTON_RIGHT_Pin);
-  button_init(BUTTON_DOWN, PIN_BUTTON_DOWN_Pin);
-  button_init(BUTTON_UP, PIN_BUTTON_UP_Pin);
+  eeprom_init();
 
-  SH1106_Init();
+  uint8_t idata[] = {23, 0, 22, 12};
+  uint8_t odata[4] = {0};
 
-  menu_init_entry(&main_menu);
-  menu_print();
+  eeprom_page_write(0, idata, 4);
+
+  HAL_Delay(100);
+
+  eeprom_random_read(0, odata, 4);
 
   while (1)
   {
-    menu_signal();
-
-    HAL_Delay(100);
-
+    
+    printf("Array element 2: %d\n", odata[2]);
+    HAL_Delay(10000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
