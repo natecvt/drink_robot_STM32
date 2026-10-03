@@ -23,6 +23,8 @@
 /* USER CODE BEGIN Includes */
 #include "button.h"
 #include "menu_defines.h"
+#include "drinks.h"
+#include "eeprom_programmer.h"
 #include "stdio.h"
 /* USER CODE END Includes */
 
@@ -119,22 +121,16 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  eeprom_init();
 
-  uint8_t idata[] = {23, 0, 22, 12};
-  uint8_t odata[4] = {0};
-
-  eeprom_page_write(0, idata, 4);
-
-  HAL_Delay(100);
-
-  eeprom_random_read(0, odata, 4);
+  if (eeprom_programmer_init()) Error_Handler();
+  printf("Hello\n");
 
   while (1)
   {
     
-    printf("Array element 2: %d\n", odata[2]);
-    HAL_Delay(10000);
+    HAL_UART_Receive_IT(PROG_UART, &rx_ele, 1);
+    //HAL_UART_Transmit(PROG_UART, (uint8_t*)RCPT_MSG, RCPT_SIZ, 20000);
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -205,7 +201,7 @@ static void MX_I2C1_Init(void)
 
   /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
-  hi2c1.Init.ClockSpeed = 400000;
+  hi2c1.Init.ClockSpeed = 100000;
   hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
   hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;

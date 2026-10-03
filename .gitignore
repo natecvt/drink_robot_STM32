@@ -1,2 +1,5 @@
 .pio/*
 .vscode/*
+util/.vscode/*
+util/build/*
+util/bin/*

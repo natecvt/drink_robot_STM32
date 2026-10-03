@@ -1,14 +1,14 @@
 #ifndef HAL_DEFINES_H
 #define HAL_DEFINES_H
 
+#include <stdint.h>
+#include <string.h>
+
 #include "stm32f4xx_hal.h"
 #include "cmsis_gcc.h" /** for __REV and __REV16 if needed */
 #include "main.h"
 
 #include "fonts_local.h"
-
-#include <stdint.h>
-#include <string.h>
 
 /** --- DEFINES --- */
 
@@ -59,8 +59,9 @@
 #define AT24C512
 
 #define EEPROM_ADDRESS 0x50 << 1
+#define EEPROM_WRITE_DELAY 100
 
-#define PAGE_LIMIT 128
+#define PAGE_SIZE 128
 #define PAGE_EXP 7
 
 #if defined(AT24C1024)

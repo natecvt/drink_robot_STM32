@@ -52,7 +52,7 @@ EEPROM_Status_t eeprom_page_write(uint16_t byte_address, uint8_t *data, uint16_t
     if ((end >> PAGE_EXP) >= PAGES) return EEPROM_OTHER_ERR;
 
     /** detects intra-page overflow */
-    if ((byte_address >> PAGE_EXP) - (end >> PAGE_EXP)) return EEPROM_ADDRESS_ERR;
+    if ((byte_address >> PAGE_EXP) != (end >> PAGE_EXP)) return EEPROM_ADDRESS_ERR;
 
     if (HAL_I2C_Mem_Write(EEPROM_I2C, 
         EEPROM_ADDRESS, 
@@ -61,6 +61,8 @@ EEPROM_Status_t eeprom_page_write(uint16_t byte_address, uint8_t *data, uint16_t
         data, 
         size, 
         HAL_MAX_DELAY) != HAL_OK) return EEPROM_WRITE_ERR;
+
+    while (HAL_I2C_IsDeviceReady(EEPROM_I2C, (EEPROM_ADDRESS ), 1, EEPROM_WRITE_DELAY));
 
     return EEPROM_OK;
 }
