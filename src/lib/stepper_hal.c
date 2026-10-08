@@ -70,7 +70,7 @@ void stepper_update_state(uint8_t axis, uint32_t steps, uint16_t rpm, GPIO_PinSt
     static Stepper_t *stepper = {0};
     stepper = &(steppers[axis]);
 
-    /** temporarily lock stepper isr, don't disable because other things might be happening */
+    /** temporarily lock stepper isr, don't disable pin because other things might be happening */
     stepper_set_speed(axis, 0);
 
     stepper->stepcount = steps;

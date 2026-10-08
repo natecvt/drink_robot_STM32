@@ -25,6 +25,7 @@
 #include "menu_defines.h"
 #include "drinks.h"
 #include "eeprom_programmer.h"
+#include "motion_planner.h"
 #include "stdio.h"
 /* USER CODE END Includes */
 
@@ -145,6 +146,13 @@ int main(void)
   stepper.stp_gpio =  MOT2ST_Pin;
   stepper.timer =     Y_TIMER;
   stepper_init(AXIS_Y, &stepper, 200 * 32);
+  stepper.dir_bus =   MOT3DR_GPIO_Port;
+  stepper.dir_gpio =  MOT3DR_Pin;
+  stepper.stp_bus =   MOT3ST_GPIO_Port;
+  stepper.stp_gpio =  MOT3ST_Pin;
+  stepper.timer =     Z_TIMER;
+  stepper_init(AXIS_Z, &stepper, 200 * 32);
+  mplan_init();
 
   /* USER CODE END 2 */
 
@@ -152,19 +160,32 @@ int main(void)
   /* USER CODE BEGIN WHILE */
 
   HAL_Delay(2000);
-  stepper_update_state(AXIS_X, 12800, 20, 1, 1);
-  stepper_update_state(AXIS_Y, 12800, 30, 0, 1);
+
+  uint32_t steps[3] = {6400, 25200, 0};
+  uint16_t speeds[3] = {30, 10, 0};
+  uint8_t dirs[3] = {1, 0, 0};
+
+  mplan_produce_plan(steps, speeds, dirs);
+
+  steps[0] = 1600;
+  steps[1] = 25600;
+  speeds[0] = 2;
+  speeds[1] = 20;
+  dirs[0] = 0;
+  dirs[1] = 1;
+
+  mplan_produce_plan(steps, speeds, dirs);
 
   while (1)
   {
-    // if (num != 0) {
-    //   HAL_GPIO_TogglePin(steppers[AXIS_X].stp_bus, steppers[AXIS_X].stp_gpio);
-    //   HAL_Delay(5);
-    //   num--;
-    // }
-    if (!steppers[AXIS_X].stepcount && !steppers[AXIS_Y].stepcount) {
-      stepper_set_enable(AXIS_X, 0);
+    if (mplan_query_current_plan(NULL)) {
+      mplan_consume_plan();
+      printf("consumed 1 plan!\n");
     }
+
+    HAL_Delay(100);
+    printf("on plan number: %d\n", rb_cindex);
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
