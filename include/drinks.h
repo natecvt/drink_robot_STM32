@@ -31,9 +31,6 @@
  * similar constructs apply to Recipes
  */
 
-// idk if this helps, maybe compiler loses optimization ability here
-#define S(type) ((uint16_t)sizeof(type))
-
 typedef enum {
     DRINK_OK = 0,
     DRINK_ADDRESS_ERROR = 1,

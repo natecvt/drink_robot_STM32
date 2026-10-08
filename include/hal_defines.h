@@ -20,9 +20,10 @@
 #define ABS(x)   ((x) > 0 ? (x) : -(x))
 /** Minimum */
 #define min(a, b) (((a) < (b)) ? (a) : (b))
+// idk if this helps, maybe compiler loses optimization ability here
+#define S(type) ((uint16_t)sizeof(type))
 
 /** Buttons */
-
 #define DEBOUNCE_MS 50
 #define TIMER_ARR_INCR_S 0.0001 // tenth of millisecond
 #define TIMER_DIFF (uint16_t)((double)DEBOUNCE_MS / (1000.0 * TIMER_ARR_INCR_S))
@@ -78,6 +79,12 @@
     #define PAGES 32
 #endif
 
+/** Steppers */
+#define STEPPER_NUM 3
+
+#define X_TIMER &htim4
+#define Y_TIMER &htim9
+#define Z_TIMER &htim11
 
 /** --- DATA --- */
 
@@ -141,188 +148,23 @@ typedef enum {
 	SH1106_COLOR_WHITE = 0x01  /*!< Pixel is set. Color depends on LCD */
 } SH1106_COLOR_t;
 
-/**
- * @brief  Initializes SH1106 LCD
- * @param  None
- * @retval Initialization status:
- *           - 0: LCD was not detected on I2C port
- *           - > 0: LCD initialized OK and ready to use
- */
 uint8_t SH1106_Init(void);
-
-/** 
- * @brief  Updates buffer from internal RAM to LCD
- * @note   This function must be called each time you do some changes to LCD, to update buffer from RAM to LCD
- * @param  None
- * @retval None
- */
 void SH1106_UpdateScreen(void);
-
-/**
- * @brief  Toggles pixels invertion inside internal RAM
- * @note   @ref SH1106_UpdateScreen() must be called after that in order to see updated LCD screen
- * @param  None
- * @retval None
- */
 void SH1106_ToggleInvert(void);
-
-/** 
- * @brief  Fills entire LCD with desired color
- * @note   @ref SH1106_UpdateScreen() must be called after that in order to see updated LCD screen
- * @param  Color: Color to be used for screen fill. This parameter can be a value of @ref SH1106_COLOR_t enumeration
- * @retval None
- */
 void SH1106_Fill(SH1106_COLOR_t Color);
-
-/**
- * @brief  Draws pixel at desired location
- * @note   @ref SH1106_UpdateScreen() must called after that in order to see updated LCD screen
- * @param  x: X location. This parameter can be a value between 0 and SH1106_WIDTH - 1
- * @param  y: Y location. This parameter can be a value between 0 and SH1106_HEIGHT - 1
- * @param  color: Color to be used for screen fill. This parameter can be a value of @ref SH1106_COLOR_t enumeration
- * @retval None
- */
 void SH1106_DrawPixel(uint16_t x, uint16_t y, SH1106_COLOR_t color);
-
-/**
- * @brief  Sets cursor pointer to desired location for strings
- * @param  x: X location. This parameter can be a value between 0 and SH1106_WIDTH - 1
- * @param  y: Y location. This parameter can be a value between 0 and SH1106_HEIGHT - 1
- * @retval None
- */
 void SH1106_GotoXY(uint16_t x, uint16_t y);
-
-/**
- * @brief  Puts character to internal RAM
- * @note   @ref SH1106_UpdateScreen() must be called after that in order to see updated LCD screen
- * @param  ch: Character to be written
- * @param  *Font: Pointer to @ref FontDef_t structure with used font
- * @param  color: Color used for drawing. This parameter can be a value of @ref SH1106_COLOR_t enumeration
- * @retval Character written
- */
 char SH1106_Putc(char ch, FontDef_t* Font, SH1106_COLOR_t color);
-
-/**
- * @brief  Puts string to internal RAM
- * @note   @ref SH1106_UpdateScreen() must be called after that in order to see updated LCD screen
- * @param  *str: String to be written
- * @param  *Font: Pointer to @ref FontDef_t structure with used font
- * @param  color: Color used for drawing. This parameter can be a value of @ref SH1106_COLOR_t enumeration
- * @retval Zero on success or character value when function failed
- */
 char SH1106_Puts(char* str, FontDef_t* Font, SH1106_COLOR_t color);
-
-/**
- * @brief  Draws line on LCD
- * @note   @ref SH1106_UpdateScreen() must be called after that in order to see updated LCD screen
- * @param  x0: Line X start point. Valid input is 0 to SH1106_WIDTH - 1
- * @param  y0: Line Y start point. Valid input is 0 to SH1106_HEIGHT - 1
- * @param  x1: Line X end point. Valid input is 0 to SH1106_WIDTH - 1
- * @param  y1: Line Y end point. Valid input is 0 to SH1106_HEIGHT - 1
- * @param  c: Color to be used. This parameter can be a value of @ref SH1106_COLOR_t enumeration
- * @retval None
- */
 void SH1106_DrawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, SH1106_COLOR_t c);
-
-/**
- * @brief  Draws rectangle on LCD
- * @note   @ref SH1106_UpdateScreen() must be called after that in order to see updated LCD screen
- * @param  x: Top left X start point. Valid input is 0 to SH1106_WIDTH - 1
- * @param  y: Top left Y start point. Valid input is 0 to SH1106_HEIGHT - 1
- * @param  w: Rectangle width in units of pixels
- * @param  h: Rectangle height in units of pixels
- * @param  c: Color to be used. This parameter can be a value of @ref SH1106_COLOR_t enumeration
- * @retval None
- */
 void SH1106_DrawRectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, SH1106_COLOR_t c);
-
-/**
- * @brief  Draws filled rectangle on LCD
- * @note   @ref SH1106_UpdateScreen() must be called after that in order to see updated LCD screen
- * @param  x: Top left X start point. Valid input is 0 to SH1106_WIDTH - 1
- * @param  y: Top left Y start point. Valid input is 0 to SH1106_HEIGHT - 1
- * @param  w: Rectangle width in units of pixels
- * @param  h: Rectangle height in units of pixels
- * @param  c: Color to be used. This parameter can be a value of @ref SH1106_COLOR_t enumeration
- * @retval None
- */
 void SH1106_DrawFilledRectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, SH1106_COLOR_t c);
-
-/**
- * @brief  Draws triangle on LCD
- * @note   @ref SH1106_UpdateScreen() must be called after that in order to see updated LCD screen
- * @param  x1: First coordinate X location. Valid input is 0 to SH1106_WIDTH - 1
- * @param  y1: First coordinate Y location. Valid input is 0 to SH1106_HEIGHT - 1
- * @param  x2: Second coordinate X location. Valid input is 0 to SH1106_WIDTH - 1
- * @param  y2: Second coordinate Y location. Valid input is 0 to SH1106_HEIGHT - 1
- * @param  x3: Third coordinate X location. Valid input is 0 to SH1106_WIDTH - 1
- * @param  y3: Third coordinate Y location. Valid input is 0 to SH1106_HEIGHT - 1
- * @param  c: Color to be used. This parameter can be a value of @ref SH1106_COLOR_t enumeration
- * @retval None
- */
 void SH1106_DrawTriangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t x3, uint16_t y3, SH1106_COLOR_t color);
-
-/**
- * @brief  Draws circle to STM buffer
- * @note   @ref SH1106_UpdateScreen() must be called after that in order to see updated LCD screen
- * @param  x: X location for center of circle. Valid input is 0 to SH1106_WIDTH - 1
- * @param  y: Y location for center of circle. Valid input is 0 to SH1106_HEIGHT - 1
- * @param  r: Circle radius in units of pixels
- * @param  c: Color to be used. This parameter can be a value of @ref SH1106_COLOR_t enumeration
- * @retval None
- */
 void SH1106_DrawCircle(int16_t x0, int16_t y0, int16_t r, SH1106_COLOR_t c);
-
-/**
- * @brief  Draws filled circle to STM buffer
- * @note   @ref SH1106_UpdateScreen() must be called after that in order to see updated LCD screen
- * @param  x: X location for center of circle. Valid input is 0 to SH1106_WIDTH - 1
- * @param  y: Y location for center of circle. Valid input is 0 to SH1106_HEIGHT - 1
- * @param  r: Circle radius in units of pixels
- * @param  c: Color to be used. This parameter can be a value of @ref SH1106_COLOR_t enumeration
- * @retval None
- */
 void SH1106_DrawFilledCircle(int16_t x0, int16_t y0, int16_t r, SH1106_COLOR_t c);
-
-/**
- * @brief  Initializes SH1106 LCD
- * @param  None
- * @retval Initialization status:
- *           - 0: LCD was not detected on I2C port
- *           - > 0: LCD initialized OK and ready to use
- */
 void SH1106_I2C_Init();
-
-/**
- * @brief  Writes single byte to slave
- * @param  *I2Cx: I2C used
- * @param  address: 7 bit slave address, left aligned, bits 7:1 are used, LSB bit is not used
- * @param  reg: register to write to
- * @param  data: data to be written
- * @retval None
- */
 void SH1106_I2C_Write(uint8_t address, uint8_t reg, uint8_t data);
-
-/**
- * @brief  Writes multi bytes to slave
- * @param  *I2Cx: I2C used
- * @param  address: 7 bit slave address, left aligned, bits 7:1 are used, LSB bit is not used
- * @param  reg: register to write to
- * @param  *data: pointer to data array to write it to slave
- * @param  count: how many bytes will be written
- * @retval None
- */
 void SH1106_I2C_WriteMulti(uint8_t address, uint8_t reg, uint8_t *data, uint16_t count);
-
-/**
- * @brief  Draws the Bitmap
- * @param  X:  X location to start the Drawing
- * @param  Y:  Y location to start the Drawing
- * @param  *bitmap : Pointer to the bitmap
- * @param  W : width of the image
- * @param  H : Height of the image
- * @param  color : 1-> white/blue, 0-> black
- */
 void SH1106_DrawBitmap(int16_t x, int16_t y, const unsigned char* bitmap, int16_t w, int16_t h, uint16_t color);
 
 // scroll the screen for fixed rows
@@ -354,5 +196,63 @@ EEPROM_Status_t eeprom_init();
 EEPROM_Status_t eeprom_current_address_read(uint8_t *byte_address);
 EEPROM_Status_t eeprom_random_read(uint16_t byte_address, uint8_t *data, uint16_t size);
 EEPROM_Status_t eeprom_page_write(uint16_t byte_address, uint8_t *data, uint16_t size);
+
+/** Stepper motors */
+
+typedef enum {
+    STEPPER_OK = 0,
+    STEPPER_INIT_ERR = 1,
+
+} Stepper_Err_t;
+
+enum Axes {
+    AXIS_X = 0,
+    AXIS_Y = 1,
+    AXIS_Z = 2,
+    AXIS_A = 3,
+    AXIS_B = 4,
+    AXES_LEN = 5,
+};
+
+typedef struct {
+    GPIO_TypeDef *en_bus;
+    GPIO_TypeDef *dir_bus;
+    GPIO_TypeDef *stp_bus;
+
+    uint16_t en_gpio;
+    uint16_t dir_gpio;
+    uint16_t stp_gpio;
+
+    TIM_HandleTypeDef *timer;
+} Stepper_Init_t;
+
+typedef struct {
+    GPIO_TypeDef *en_bus;
+    GPIO_TypeDef *dir_bus;
+    GPIO_TypeDef *stp_bus;
+
+    uint16_t en_gpio;
+    uint16_t dir_gpio;
+    uint16_t stp_gpio;
+
+    TIM_HandleTypeDef *timer;
+
+    uint16_t spr;
+
+    /** EN, DIR */
+    GPIO_PinState states[2];
+    uint32_t stepcount;
+
+} Stepper_t;
+
+extern Stepper_t steppers[STEPPER_NUM];
+
+Stepper_Err_t stepper_init(uint8_t axis, Stepper_Init_t *stepper, uint16_t steps_per_rotation);
+void stepper_step(uint8_t axis);
+void stepper_set_speed(uint8_t axis, uint16_t rpm);
+void stepper_set_direction(uint8_t axis, GPIO_PinState dir);
+void stepper_set_enable(uint8_t axis, GPIO_PinState en);
+void stepper_update_state(uint8_t axis, uint32_t steps, uint16_t rpm, GPIO_PinState dir, GPIO_PinState en);
+void stepper_block_until_complete(uint8_t axis);
 
 #endif /** HAL_DEFINES_H */
