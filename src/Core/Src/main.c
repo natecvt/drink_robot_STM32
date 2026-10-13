@@ -75,7 +75,7 @@ static void MX_TIM11_Init(void);
 /* USER CODE BEGIN 0 */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  if (htim == &htim3) buttons_HAL_reset();
+  if (htim == BUTTON_TIMER) buttons_HAL_reset();
   if (htim == X_TIMER) stepper_step(0);
   if (htim == Y_TIMER) stepper_step(1);
   if (htim == Z_TIMER) stepper_step(2);
@@ -122,36 +122,54 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
-  MX_TIM3_Init();
   MX_I2C1_Init();
+  MX_TIM3_Init();
   MX_TIM4_Init();
   MX_TIM9_Init();
   MX_TIM11_Init();
   /* USER CODE BEGIN 2 */
-  HAL_TIM_Base_Start_IT(&htim3);
 
-  Stepper_Init_t stepper;
-  stepper.en_bus =    ALLEN_GPIO_Port;
-  stepper.en_gpio =   ALLEN_Pin;
-  stepper.dir_bus =   MOT1DR_GPIO_Port;
-  stepper.dir_gpio =  MOT1DR_Pin;
-  stepper.stp_bus =   MOT1ST_GPIO_Port;
-  stepper.stp_gpio =  MOT1ST_Pin;
-  stepper.timer =     X_TIMER;
+  button_init(BUTTON_SEL, PIN_BUTTON_SEL_Pin);
+  button_init(BUTTON_RIGHT, PIN_BUTTON_RIGHT_Pin);
+  button_init(BUTTON_DOWN, PIN_BUTTON_DOWN_Pin);
+  button_init(BUTTON_UP, PIN_BUTTON_UP_Pin);
+  button_init(BUTTON_LEFT, PIN_BUTTON_LEFT_Pin);
+  button_init(BUTTON_X_HOME, PIN_HOME_X_Pin);
+  button_init(BUTTON_Y_HOME, PIN_HOME_Y_Pin);
+
+  Stepper_Init_t stepper = {0};
+  stepper.en_bus =      MOT1EN_GPIO_Port;
+  stepper.en_gpio =     MOT1EN_Pin;
+  stepper.dir_bus =     MOT1DR_GPIO_Port;
+  stepper.dir_gpio =    MOT1DR_Pin;
+  stepper.stp_bus =     MOT1ST_GPIO_Port;
+  stepper.stp_gpio =    MOT1ST_Pin;
+  stepper.ratio =       X_RATIO;
+  stepper.limit_index = BUTTON_X_HOME;
+  stepper.timer =       X_TIMER;
   stepper_init(AXIS_X, &stepper, 200 * 32);
 
-  stepper.dir_bus =   MOT2DR_GPIO_Port;
-  stepper.dir_gpio =  MOT2DR_Pin;
-  stepper.stp_bus =   MOT2ST_GPIO_Port;
-  stepper.stp_gpio =  MOT2ST_Pin;
-  stepper.timer =     Y_TIMER;
+  stepper.en_bus =      MOT2EN_GPIO_Port;
+  stepper.en_gpio =     MOT2EN_Pin;
+  stepper.dir_bus =     MOT2DR_GPIO_Port;
+  stepper.dir_gpio =    MOT2DR_Pin;
+  stepper.stp_bus =     MOT2ST_GPIO_Port;
+  stepper.stp_gpio =    MOT2ST_Pin;
+  stepper.ratio =       Y_RATIO;
+  stepper.limit_index = BUTTON_Y_HOME;
+  stepper.timer =       Y_TIMER;
   stepper_init(AXIS_Y, &stepper, 200 * 32);
-  stepper.dir_bus =   MOT3DR_GPIO_Port;
-  stepper.dir_gpio =  MOT3DR_Pin;
-  stepper.stp_bus =   MOT3ST_GPIO_Port;
-  stepper.stp_gpio =  MOT3ST_Pin;
-  stepper.timer =     Z_TIMER;
+
+  stepper.en_bus =      MOT3EN_GPIO_Port;
+  stepper.en_gpio =     MOT3EN_Pin;
+  stepper.dir_bus =     MOT3DR_GPIO_Port;
+  stepper.dir_gpio =    MOT3DR_Pin;
+  stepper.stp_bus =     MOT3ST_GPIO_Port;
+  stepper.stp_gpio =    MOT3ST_Pin;
+  stepper.ratio =       Z_RATIO;
+  stepper.timer =       Z_TIMER;
   stepper_init(AXIS_Z, &stepper, 200 * 32);
+  
   mplan_init();
 
   /* USER CODE END 2 */
@@ -161,27 +179,10 @@ int main(void)
 
   HAL_Delay(2000);
 
-  uint32_t steps[3] = {6400, 25200, 0};
-  uint16_t speeds[3] = {30, 10, 0};
-  uint8_t dirs[3] = {1, 0, 0};
-
-  mplan_produce_plan(steps, speeds, dirs);
-
-  steps[0] = 1600;
-  steps[1] = 25600;
-  speeds[0] = 2;
-  speeds[1] = 20;
-  dirs[0] = 0;
-  dirs[1] = 1;
-
-  mplan_produce_plan(steps, speeds, dirs);
+  stepper_home(AXIS_Y);
 
   while (1)
   {
-    if (mplan_query_current_plan(NULL)) {
-      mplan_consume_plan();
-      printf("consumed 1 plan!\n");
-    }
 
     HAL_Delay(100);
     printf("on plan number: %d\n", rb_cindex);
@@ -491,12 +492,12 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOA, MOT1DR_Pin|MOT2DR_Pin|MOT3DR_Pin|LD2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(ALLEN_GPIO_Port, ALLEN_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOC, MOT1EN_Pin|MOT2EN_Pin|MOT3EN_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pins : MOT1ST_Pin MOT2ST_Pin MOT3ST_Pin */
   GPIO_InitStruct.Pin = MOT1ST_Pin|MOT2ST_Pin|MOT3ST_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
@@ -515,12 +516,25 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : ALLEN_Pin */
-  GPIO_InitStruct.Pin = ALLEN_Pin;
+  /*Configure GPIO pins : PIN_HOME_X_Pin PIN_HOME_Y_Pin */
+  GPIO_InitStruct.Pin = PIN_HOME_X_Pin|PIN_HOME_Y_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : MOT1EN_Pin */
+  GPIO_InitStruct.Pin = MOT1EN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(ALLEN_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(MOT1EN_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : MOT2EN_Pin MOT3EN_Pin */
+  GPIO_InitStruct.Pin = MOT2EN_Pin|MOT3EN_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI1_IRQn, 0, 0);
@@ -528,6 +542,9 @@ static void MX_GPIO_Init(void)
 
   HAL_NVIC_SetPriority(EXTI2_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI2_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI4_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI4_IRQn);
 
   HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);

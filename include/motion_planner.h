@@ -12,17 +12,17 @@ typedef enum Mot_Plan_Err {
 } Mot_Plan_Err_t;
 
 typedef struct Plan {
-    uint32_t steps[STEPPER_NUM];
+    double dists[STEPPER_NUM];
     uint16_t speeds[STEPPER_NUM];
-    uint8_t directions[STEPPER_NUM];
 } Plan_t;
 
+/** ringbuffer behavior is applied to this array */
 Plan_t plans[RB_SIZE];
 extern Plan_t mod_plan;
 
 void mplan_init();
 Mot_Plan_Err_t mplan_produce_preplan();
-Mot_Plan_Err_t mplan_produce_plan(uint32_t *steps, uint16_t *speeds, uint8_t *dirs);
+Mot_Plan_Err_t mplan_produce_plan(double *dists, uint16_t *speeds);
 uint8_t mplan_query_current_plan(Plan_t *pcplan);
 Mot_Plan_Err_t mplan_consume_plan();
 

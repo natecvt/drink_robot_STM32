@@ -22,12 +22,15 @@
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 // idk if this helps, maybe compiler loses optimization ability here
 #define S(type) ((uint16_t)sizeof(type))
+#define SMALL_NUM 0.01
 
 /** Buttons */
 #define DEBOUNCE_MS 50
 #define TIMER_ARR_INCR_S 0.0001 // tenth of millisecond
 #define TIMER_DIFF (uint16_t)((double)DEBOUNCE_MS / (1000.0 * TIMER_ARR_INCR_S))
-#define BUTTON_TIMER TIM3
+
+extern TIM_HandleTypeDef htim3;
+#define BUTTON_TIMER (&htim3)
 #define BUTTON_GPIO_BUS GPIOB
 
 /** how many debounce periods for latch to be reset */
@@ -82,12 +85,20 @@
 /** Steppers */
 #define STEPPER_NUM 3
 
-#define X_TIMER &htim4
-#define Y_TIMER &htim9
-#define Z_TIMER &htim11
+#define X_TIMER (&htim4)
+#define Y_TIMER (&htim9)
+#define Z_TIMER (&htim11)
+
+#define X_RATIO 0.0068 /* mm/step */
+#define Y_RATIO 0.0330 /* mm/step */
+#define Z_RATIO 0.0050 /* mL/step */
 
 /** --- DATA --- */
 
+/** 
+ * signals can be set and reset from anywhere
+ * for buttons, the bit place is shifted left by the button number below
+ */
 enum Signals {
     SELECT =     0b00000001,
     RIGHT =      0b00000010,
@@ -96,19 +107,27 @@ enum Signals {
     LEFT =       0b00010000,
     BACK =       0b00001001, /** experimental */
     DATA_FETCH = 0b00100000,
+    X_HOME =    0b01000000,
+    Y_HOME =    0b10000000
 };
 
 extern volatile uint8_t signal_flags;
 
 /** Buttons */
 
+/** 
+ * when adding more buttons, update __signals_switch with new case
+ * 
+ */
 enum Buttons {
     BUTTON_SEL = 0,
     BUTTON_RIGHT = 1,
     BUTTON_DOWN = 2,
     BUTTON_UP = 3,
     BUTTON_LEFT = 4,
-    BUTTON_LEN = 5
+    BUTTON_X_HOME = 5,
+    BUTTON_Y_HOME = 6,
+    BUTTON_LEN = 7
 };
 
 typedef enum {
@@ -223,6 +242,10 @@ typedef struct {
     uint16_t dir_gpio;
     uint16_t stp_gpio;
 
+    double ratio;
+
+    uint8_t limit_index;
+
     TIM_HandleTypeDef *timer;
 } Stepper_Init_t;
 
@@ -235,6 +258,10 @@ typedef struct {
     uint16_t dir_gpio;
     uint16_t stp_gpio;
 
+    double ratio;
+
+    uint8_t limit_index;
+
     TIM_HandleTypeDef *timer;
 
     uint16_t spr;
@@ -242,6 +269,9 @@ typedef struct {
     /** EN, DIR */
     GPIO_PinState states[2];
     uint32_t stepcount;
+
+    uint8_t homed;
+    double coord;
 
 } Stepper_t;
 
@@ -252,7 +282,10 @@ void stepper_step(uint8_t axis);
 void stepper_set_speed(uint8_t axis, uint16_t rpm);
 void stepper_set_direction(uint8_t axis, GPIO_PinState dir);
 void stepper_set_enable(uint8_t axis, GPIO_PinState en);
-void stepper_update_state(uint8_t axis, uint32_t steps, uint16_t rpm, GPIO_PinState dir, GPIO_PinState en);
+void stepper_update_state(uint8_t axis, double dist, uint16_t rpm, GPIO_PinState en);
 void stepper_block_until_complete(uint8_t axis);
+double stepper_report_current_coord(uint8_t axis);
+void stepper_home(uint8_t axis);
 
 #endif /** HAL_DEFINES_H */
+

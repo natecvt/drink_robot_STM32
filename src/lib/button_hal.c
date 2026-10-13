@@ -1,6 +1,6 @@
 #include "hal_defines.h"
 
-Button_HAL_t buttons_HAL[BUTTON_LEN] = {};
+Button_HAL_t buttons_HAL[BUTTON_LEN] = {0};
 
 void button_HAL_timer_init()
 {
@@ -8,9 +8,9 @@ void button_HAL_timer_init()
     double f = (double)HAL_RCC_GetPCLK2Freq();
 
     /** valid debounce between 0 and 6.5s, using TIMER_ARR_INC for delta */
-    BUTTON_TIMER->ARR = TIMER_DIFF;
-    BUTTON_TIMER->PSC = (uint32_t)(TIMER_ARR_INCR_S * f) - 1;
-
+    BUTTON_TIMER->Instance->ARR = TIMER_DIFF;
+    BUTTON_TIMER->Instance->PSC = (uint32_t)(TIMER_ARR_INCR_S * f) - 1;
+    HAL_TIM_Base_Start_IT(BUTTON_TIMER);
 }
 
 void button_HAL_init(Button_HAL_t *button, uint16_t gpio)
@@ -53,6 +53,8 @@ void __signals_switch(uint8_t button_index, uint8_t func_switch)
 
     case BUTTON_LEFT:
     case BUTTON_RIGHT:
+    case BUTTON_X_HOME:
+    case BUTTON_Y_HOME:
         /** do this when called from isr or reset
          *  this style allows button holding to create multiple signals
          */
@@ -80,7 +82,7 @@ Button_HAL_Err_t buttons_HAL_isr(uint8_t button_index)
     if (buttons_HAL[button_index].state && !buttons_HAL[button_index].signal_latched) __signals_switch(button_index, 1);
 
     /** reset the timer counter */
-    BUTTON_TIMER->CNT = 0;
+    BUTTON_TIMER->Instance->CNT = 0;
     
     return BUTTON_HAL_OK;
 }

@@ -6,6 +6,9 @@ Button_Err_t button_init(uint8_t button_index, uint16_t gpio)
 {
     if (button_index > BUTTON_LEN - 1) return BUTTON_UNKNOWN;
 
+    /** init timer on the last button */
+    if (button_index == BUTTON_LEN - 1) button_HAL_timer_init();
+
     #ifndef TESTING
     button_HAL_init(&buttons_HAL[button_index], gpio);
     #endif
