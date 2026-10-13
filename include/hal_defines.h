@@ -90,7 +90,7 @@ extern TIM_HandleTypeDef htim3;
 #define Z_TIMER (&htim11)
 
 #define X_RATIO 0.0068 /* mm/step */
-#define Y_RATIO 0.0330 /* mm/step */
+#define Y_RATIO -0.0330 /* mm/step */
 #define Z_RATIO 0.0050 /* mL/step */
 
 /** --- DATA --- */

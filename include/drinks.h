@@ -104,10 +104,6 @@ Drink_Err_t get_coord(const uint16_t ingred_index);
 void calc_proportions(double *proportions);
 void calc_amounts(double *amounts, double *proportions, double amount);
 
-/** #TODO: relocate these to an all-in-one processor file */
-uint8_t process_recipe(double amount);
-uint8_t calib_ingredient();
-
 /** globally accessible (working) variables for manipulation */
 extern Ingredient in_ex;
 extern Recipe rp_ex;

@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include "button.h"
 #include "menu_defines.h"
+#include "menu_elements.h"
 #include "drinks.h"
 #include "eeprom_programmer.h"
 #include "motion_planner.h"
@@ -129,6 +130,8 @@ int main(void)
   MX_TIM11_Init();
   /* USER CODE BEGIN 2 */
 
+  SH1106_Init();
+
   button_init(BUTTON_SEL, PIN_BUTTON_SEL_Pin);
   button_init(BUTTON_RIGHT, PIN_BUTTON_RIGHT_Pin);
   button_init(BUTTON_DOWN, PIN_BUTTON_DOWN_Pin);
@@ -179,13 +182,15 @@ int main(void)
 
   HAL_Delay(2000);
 
-  stepper_home(AXIS_Y);
+  uint8_t p = 0;
 
   while (1)
   {
-
-    HAL_Delay(100);
-    printf("on plan number: %d\n", rb_cindex);
+    SH1106_GotoXY(10, 10);
+    //SH1106_Puts("Hello", &Font_11x18, SH1106_COLOR_WHITE);
+    HAL_Delay(1000);
+    //__progress_bar_menu_element_SH1106_print(p++, 10, 10, 100, 7);
+    SH1106_Clear();
 
     /* USER CODE END WHILE */
 

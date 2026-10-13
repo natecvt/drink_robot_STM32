@@ -40,10 +40,13 @@ void stepper_step(uint8_t axis)
 
 void stepper_set_distance(uint8_t axis, double dist)
 {
-    stepper_set_direction(axis, dist > 0.0);
+    static int32_t steps = 0;
+    steps = (int32_t)(dist / steppers[axis].ratio);
+    
+    stepper_set_direction(axis, steps > 0.0);
 
     steppers[axis].coord += dist; /** intended destination */
-    steppers[axis].stepcount = ABS((int32_t)(dist / steppers[axis].ratio));
+    steppers[axis].stepcount = ABS(steps);
 }
 
 void stepper_set_speed(uint8_t axis, uint16_t rpm)

@@ -5,9 +5,7 @@
 
 #define MAIN_N 5
 
+/** the entry point for menus */
 extern Menu main_menu;
-Menu select_drink;
-
-void init_drinks();
 
 #endif /** MENU_DEFINES_H */

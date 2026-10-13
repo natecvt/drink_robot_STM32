@@ -16,8 +16,6 @@
 #define ROWS SH1106_HEIGHT / 10 - 1
 #define SUB_INDENT 5
 #define NO_ITEMS   UINT8_MAX
-#define FONT       &Font_7x10
-#define COLOR      SH1106_COLOR_WHITE
 
 typedef enum {
     MENU_OK = 0,

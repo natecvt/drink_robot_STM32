@@ -1,4 +1,5 @@
 #include "menu.h"
+#include "menu_elements.h"
 
 Menu * cur_menu = {0};
 
@@ -24,43 +25,12 @@ void menu_init_entry(Menu *main)
     cur_menu = main;
 }
 
-/** -- these functions cannot be used in testing -- */
-
-void __menu_SH1106_highlight_item()
-{
-    uint16_t y = (menu_pos + 1) * (FONT)->FontHeight;
-    SH1106_DrawRectangle(0, y, SH1106_WIDTH-1, (FONT)->FontHeight-2, COLOR);
-}
-
-char __list_type_menu_SH1106_print()
-{
-    uint8_t bottom = min(cur_menu->count, ROWS),
-        ret = 0;
-
-    SH1106_Clear();
-    SH1106_GotoXY(0, 0);
-    ret |= SH1106_Puts(cur_menu->title, FONT, COLOR);
-    SH1106_DrawLine(0, (FONT)->FontHeight-1, SH1106_WIDTH-1, (FONT)->FontHeight-1, COLOR);
-
-    for (uint8_t i = 0; i<bottom; i++) {
-        SH1106_GotoXY(0, (FONT)->FontHeight * (i+1));
-        ret |= SH1106_Puts(cur_menu->items[i].text, FONT, COLOR);
-    }
-
-    __menu_SH1106_highlight_item();
-
-    SH1106_UpdateScreen();
-    return ret;
-}
-
-/** --   -- */
-
 Menu_Err_t menu_print()
 {
     /** TODO: expand on this
      *  should only update menu when menu is changed
      */
-    return __list_type_menu_SH1106_print();
+    return __list_type_menu_SH1106_print(cur_menu, menu_pos);
 }
 
 Menu_Err_t menu_update_list(uint8_t up)
