@@ -123,14 +123,12 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
-  MX_I2C1_Init();
   MX_TIM3_Init();
+  MX_I2C1_Init();
   MX_TIM4_Init();
   MX_TIM9_Init();
   MX_TIM11_Init();
   /* USER CODE BEGIN 2 */
-
-  SH1106_Init();
 
   button_init(BUTTON_SEL, PIN_BUTTON_SEL_Pin);
   button_init(BUTTON_RIGHT, PIN_BUTTON_RIGHT_Pin);
@@ -174,6 +172,7 @@ int main(void)
   stepper_init(AXIS_Z, &stepper, 200 * 32);
   
   mplan_init();
+  menu_init_entry(&main_menu);
 
   /* USER CODE END 2 */
 
@@ -182,16 +181,19 @@ int main(void)
 
   HAL_Delay(2000);
 
-  uint8_t p = 0;
+  SH1106_Init();
+
+  strcpy(cur_menu->title, "Motha");
+  strcpy(in_ex.name, "Hello"); 
+
+  
+  steppers[AXIS_X].coord = 52.0;
 
   while (1)
   {
-    SH1106_GotoXY(10, 10);
-    //SH1106_Puts("Hello", &Font_11x18, SH1106_COLOR_WHITE);
-    HAL_Delay(1000);
-    //__progress_bar_menu_element_SH1106_print(p++, 10, 10, 100, 7);
-    SH1106_Clear();
 
+    HAL_Delay(1000);
+    __calibration_type_menu_SH1106_print(&in_ex, 2);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -262,7 +264,7 @@ static void MX_I2C1_Init(void)
 
   /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
-  hi2c1.Init.ClockSpeed = 100000;
+  hi2c1.Init.ClockSpeed = 400000;
   hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
   hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;

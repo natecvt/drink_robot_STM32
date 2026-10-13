@@ -93,6 +93,9 @@ extern TIM_HandleTypeDef htim3;
 #define Y_RATIO -0.0330 /* mm/step */
 #define Z_RATIO 0.0050 /* mL/step */
 
+#define X_LIMIT 900.0 /* mm */
+#define Y_LIMIT 300.0 /* mm */
+
 /** --- DATA --- */
 
 /** 
@@ -107,8 +110,8 @@ enum Signals {
     LEFT =       0b00010000,
     BACK =       0b00001001, /** experimental */
     DATA_FETCH = 0b00100000,
-    X_HOME =    0b01000000,
-    Y_HOME =    0b10000000
+    X_HOME =     0b01000000, /** so far not needed */
+    Y_HOME =     0b10000000  /** so far not needed */
 };
 
 extern volatile uint8_t signal_flags;

@@ -1,7 +1,7 @@
 #include "menu.h"
 #include "menu_elements.h"
 
-Menu * cur_menu = {0};
+Menu * cur_menu;
 
 /** internal variables */
 static uint8_t menu_index = 0, /** index into menu-relevant data */
@@ -30,7 +30,7 @@ Menu_Err_t menu_print()
     /** TODO: expand on this
      *  should only update menu when menu is changed
      */
-    return __list_type_menu_SH1106_print(cur_menu, menu_pos);
+    return __list_type_menu_SH1106_print(menu_pos);
 }
 
 Menu_Err_t menu_update_list(uint8_t up)
