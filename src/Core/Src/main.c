@@ -171,8 +171,10 @@ int main(void)
   stepper.timer =       Z_TIMER;
   stepper_init(AXIS_Z, &stepper, 200 * 32);
   
+  SH1106_Init();
   mplan_init();
   menu_init_entry(&main_menu);
+  BIT_SET_MASK(signal_flags, AXES_CANJOG);
 
   /* USER CODE END 2 */
 
@@ -180,20 +182,17 @@ int main(void)
   /* USER CODE BEGIN WHILE */
 
   HAL_Delay(2000);
-
-  SH1106_Init();
-
+  
   strcpy(cur_menu->title, "Motha");
   strcpy(in_ex.name, "Hello"); 
+  steppers[AXIS_X].coord = 152.0;
 
-  
-  steppers[AXIS_X].coord = 52.0;
+  calib2_update_loop();
 
   while (1)
   {
 
     HAL_Delay(1000);
-    __calibration_type_menu_SH1106_print(&in_ex, 2);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

@@ -5,6 +5,7 @@ Recipe rp_ex = {0};
 ICoord cd_ex = {0};
 IAccount ia_ex = {0};
 RAccount ra_ex = {0};
+uint8_t cindex = 0;
 
 Drink_Err_t get_ingredient(uint16_t index)
 {

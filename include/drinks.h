@@ -110,5 +110,6 @@ extern Recipe rp_ex;
 extern ICoord cd_ex;
 extern IAccount ia_ex;
 extern RAccount ra_ex;
+extern uint8_t cindex;
 
 #endif /** DRINKS_H */

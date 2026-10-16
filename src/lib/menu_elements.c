@@ -46,6 +46,23 @@ void __triangle_element_SH1106(uint8_t points_left, uint16_t x1, uint16_t y1, ui
     else SH1106_DrawTriangle(x1+w, y1+(h/2), x1, y1, x1, y1+h, COLOR);
 }
 
+void __print_format_double(char *s, double d, uint8_t places)
+{
+    if (d > 10000.0) d -= (10000.0 * (double)((uint32_t)d / 10000));
+
+    double shift = 1000.0;
+    for (uint8_t i = 0; i < 5 + places; i++) {
+        s[i] = (char)(d / shift) + '0';
+
+        d -= (double)((uint32_t)d / (uint32_t)shift) * shift;
+        shift /= 10.0;
+        if (shift < 0.1 + SMALL_NUM && shift > 0.1 - SMALL_NUM) {
+            i++;
+            s[i] = '.';
+        }
+    }
+}
+
 char __calibration_type_menu_SH1106_print(Ingredient *ig, uint8_t ig_index)
 {
     uint8_t ret = 0;
@@ -60,50 +77,54 @@ char __calibration_type_menu_SH1106_print(Ingredient *ig, uint8_t ig_index)
     /** still display the menu even if the coord is off the side */
     ret |= location_normal > 100;
 
+    /** menu title */
+    ret |= __string_menu_element_SH1106(cur_menu->title, 0, 0);
+    SH1106_DrawLine(0, (FONT)->FontHeight-1, SH1106_WIDTH-1, (FONT)->FontHeight-1, COLOR);
+
+    /** ingredient name */
+    ret |= __string_menu_element_SH1106(ig->name, 0, 2*(FONT)->FontHeight);
+
+    /** ingredient number for calibration */
+    static char s[MAX_NAMEC];
+    memset(s, 0, MAX_NAMEC);
+    snprintf(s, MAX_NAMEC, "Ingredient #%d", ig_index);
+    ret |= __string_menu_element_SH1106(s, 0, 3*(FONT)->FontHeight);
+
+    /** make triangle indicating current direction */
+    if (signal_flags & LEFT) {
+        __triangle_element_SH1106(1, 
+            1, 
+            4*(FONT)->FontHeight+1,
+            CAL_MENU_TR_W,
+            CAL_MENU_TR_H);
+    }
+    if (signal_flags & RIGHT) {
+        __triangle_element_SH1106(0, 
+            SH1106_WIDTH-CAL_MENU_TR_W-2, 
+            4*(FONT)->FontHeight+1,
+            CAL_MENU_TR_W,
+            CAL_MENU_TR_H);
+    }
+
+    /** print the current location */
+    memset(s, 0, MAX_NAMEC);
+    __print_format_double(s, location, 1);
+    ret |= __string_menu_element_SH1106(s, 
+        ((MAX_NAMEC - 6) >> 1) * (FONT)->FontWidth, 
+        4*(FONT)->FontHeight);
+
+    /** draw box around current coordinate */
+    SH1106_DrawRectangle(((MAX_NAMEC - 6) >> 1) * (FONT)->FontWidth - 1, 
+        4*(FONT)->FontHeight-1,
+        6*(FONT)->FontWidth+1,
+        (FONT)->FontHeight-1,
+        COLOR);
+
     __progress_bar_menu_element_SH1106(location_normal, 
         (SH1106_WIDTH - CAL_MENU_PB_W)>>1, 
         CAL_MENU_PB_Y, 
         CAL_MENU_PB_W, 
         CAL_MENU_PB_H);
-
-    ret |= __string_menu_element_SH1106(cur_menu->title, 0, 0);
-    SH1106_DrawLine(0, (FONT)->FontHeight-1, SH1106_WIDTH-1, (FONT)->FontHeight-1, COLOR);
-
-    ret |= __string_menu_element_SH1106(ig->name, 0, 2*(FONT)->FontHeight);
-
-    static char s[MAX_NAMEC];
-    memset(s, 0, MAX_NAMEC);
-    snprintf(s, MAX_NAMEC, "Ingredient #: %d", ig_index);
-    ret |= __string_menu_element_SH1106(s, 0, 3*(FONT)->FontHeight);
-
-    /** 
-     * make triangle indicating current direction 
-     * #TODO: create jogging functionality for the calibration
-     */
-    if (signal_flags & LEFT) {
-        __triangle_element_SH1106(1, 
-            1, 
-            4*(FONT)->FontHeight,
-            CAL_MENU_TR_W,
-            CAL_MENU_TR_H);
-        
-        BIT_RESET_MASK(signal_flags, LEFT);
-    }
-    if (signal_flags & RIGHT) {
-        __triangle_element_SH1106(0, 
-            SH1106_WIDTH-CAL_MENU_TR_W-2, 
-            4*(FONT)->FontHeight,
-            CAL_MENU_TR_W,
-            CAL_MENU_TR_H);
-
-        BIT_RESET_MASK(signal_flags, RIGHT);
-    }
-
-    memset(s, 0, MAX_NAMEC);
-    snprintf(s, MAX_NAMEC, "%4.1f", (float)location);
-    ret |= __string_menu_element_SH1106(s, 
-        ((MAX_NAMEC - 6) >> 1) * (FONT)->FontWidth, 
-        4*(FONT)->FontHeight);
 
     SH1106_UpdateScreen();
     return ret;

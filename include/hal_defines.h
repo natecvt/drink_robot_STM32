@@ -89,11 +89,11 @@ extern TIM_HandleTypeDef htim3;
 #define Y_TIMER (&htim9)
 #define Z_TIMER (&htim11)
 
-#define X_RATIO 0.0068 /* mm/step */
+#define X_RATIO -0.0086 /* mm/step */
 #define Y_RATIO -0.0330 /* mm/step */
 #define Z_RATIO 0.0050 /* mL/step */
 
-#define X_LIMIT 900.0 /* mm */
+#define X_LIMIT 820.0 /* mm */
 #define Y_LIMIT 300.0 /* mm */
 
 /** --- DATA --- */
@@ -103,15 +103,16 @@ extern TIM_HandleTypeDef htim3;
  * for buttons, the bit place is shifted left by the button number below
  */
 enum Signals {
-    SELECT =     0b00000001,
-    RIGHT =      0b00000010,
-    DOWN =       0b00000100,
-    UP =         0b00001000,
-    LEFT =       0b00010000,
-    BACK =       0b00001001, /** experimental */
-    DATA_FETCH = 0b00100000,
-    X_HOME =     0b01000000, /** so far not needed */
-    Y_HOME =     0b10000000  /** so far not needed */
+    SELECT =        0b00000001,
+    RIGHT =         0b00000010,
+    DOWN =          0b00000100,
+    UP =            0b00001000,
+    LEFT =          0b00010000,
+    BACK =          0b00001001, /** experimental */
+    DATA_FETCH =    0b00100000,
+    AXES_CANJOG =   0b01000000,
+    X_HOME =        0b01000000, /** so far not needed */
+    Y_HOME =        0b10000000  /** so far not needed */
 };
 
 extern volatile uint8_t signal_flags;
@@ -270,8 +271,8 @@ typedef struct {
     uint16_t spr;
 
     /** EN, DIR */
-    GPIO_PinState states[2];
-    uint32_t stepcount;
+    uint8_t states[2];
+    volatile uint32_t stepcount;
 
     uint8_t homed;
     double coord;
@@ -289,6 +290,7 @@ void stepper_update_state(uint8_t axis, double dist, uint16_t rpm, GPIO_PinState
 void stepper_block_until_complete(uint8_t axis);
 double stepper_report_current_coord(uint8_t axis);
 void stepper_home(uint8_t axis);
+void stepper_jog(uint8_t axis, uint8_t button_index);
+
 
 #endif /** HAL_DEFINES_H */
-

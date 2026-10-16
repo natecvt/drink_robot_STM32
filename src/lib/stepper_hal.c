@@ -38,17 +38,6 @@ void stepper_step(uint8_t axis)
     }
 }
 
-void stepper_set_distance(uint8_t axis, double dist)
-{
-    static int32_t steps = 0;
-    steps = (int32_t)(dist / steppers[axis].ratio);
-    
-    stepper_set_direction(axis, steps > 0.0);
-
-    steppers[axis].coord += dist; /** intended destination */
-    steppers[axis].stepcount = ABS(steps);
-}
-
 void stepper_set_speed(uint8_t axis, uint16_t rpm)
 {
     static TIM_TypeDef *t;
@@ -74,6 +63,17 @@ void stepper_set_direction(uint8_t axis, GPIO_PinState dir)
 {
     HAL_GPIO_WritePin(steppers[axis].dir_bus, steppers[axis].dir_gpio, dir);
     steppers[axis].states[1] = dir;
+}
+
+void stepper_set_distance(uint8_t axis, double dist)
+{
+    static int32_t steps = 0;
+    steps = (int32_t)(dist / steppers[axis].ratio);
+    
+    stepper_set_direction(axis, steps > 0.0);
+
+    steppers[axis].coord += dist; /** intended destination */
+    steppers[axis].stepcount = ABS(steps);
 }
 
 void stepper_set_enable(uint8_t axis, GPIO_PinState en)
@@ -103,8 +103,8 @@ double stepper_report_current_coord(uint8_t axis)
 {
     /** planned destination - distance to go */
     return steppers[axis].coord - 
-        (-1 * steppers[axis].states[1] + 1 * !steppers[axis].states[1]) * 
-        (double)(steppers[axis].stepcount) * steppers[axis].ratio;
+        ((1 * steppers[axis].states[1] + -1 * !steppers[axis].states[1]) * 
+        (double)(steppers[axis].stepcount) * steppers[axis].ratio);
 }
 
 void stepper_home(uint8_t axis)
@@ -137,4 +137,30 @@ void stepper_home(uint8_t axis)
 
     steppers[axis].homed = 1;
     steppers[axis].coord = 0.0;
+}
+
+void stepper_jog(uint8_t axis, uint8_t button_index)
+{
+    
+    Button_State_t bs;
+    button_get_state(&bs, button_index);
+
+    /** just a formality because only X is joggable */
+    static Stepper_t *stepper = {0};
+    stepper = &(steppers[axis]);
+
+    uint8_t right = (button_index == BUTTON_RIGHT), left = (button_index == BUTTON_LEFT);
+
+    stepper->coord = stepper_report_current_coord(axis);
+    stepper->stepcount = 0;
+
+    if (bs != BUTTON_LOW) {
+        /** #TODO: test this to see which position accounting algorithm works best */
+        
+        if (right && stepper->coord < X_LIMIT) stepper_update_state(axis, 100.0, 20, 1);
+        if (left && stepper->coord > -0.1) stepper_update_state(axis, -100.0, 20, 1);
+    }
+    else {
+        BIT_RESET(signal_flags, button_index);
+    }
 }
